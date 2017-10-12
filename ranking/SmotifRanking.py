@@ -155,7 +155,6 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
     :return:
     """
     hits = []
-    # regex = str(previous_smotif_index) + "_*_*.pickle"
     regex = str(previous_smotif_index) + "_*_*.gzip"
     file_list = glob.glob(regex)
     for f in file_list:
@@ -177,31 +176,29 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
 
             if data_filter[0] == 'PCS_filter':
                 pcs_data = data_filter
-                pcsscore = getNchiSum(pcs_data, stage)
-                total_score['pcs_score'] = pcsscore
+                pcs_score = getNchiSum(pcs_data, stage)
+                total_score['pcs_score'] = pcs_score
 
             if data_filter[0] == 'Ref_RMSD':
                 total_score['rmsd_score'] = data_filter[1]
 
             if data_filter[0] == 'RDC_filter':
                 rdc_data = data_filter
-                #Nchi = rdcSumChi(rdc_data, stage)
+                rdc_score = rdcSumChi(rdc_data, stage)
+                """
                 log_likelihood = data_filter[2]
                 rdc_tensors = data_filter[1]
                 for tensor in rdc_tensors:
                     rdc_constant = rdc_constant + tensor[0]
                 rdc_constant = rdc_constant * 1e-10
                 total_score['rdc_score'] = log_likelihood
-
-            if data_filter[0] == 'NOE_filter':
-                noe_probability = data_filter[1]
-                log_likelihood = -(math.log(noe_probability))
-                total_score['noe_score'] = log_likelihood
+                """
+                total_score['rdc_score'] = rdc_score
 
                 # calculate the total score and append the hit
         if total_score:
             keys = total_score.keys()
-            keys = ['noe_score','rdc_score']
+            keys = ['pcs_score','rdc_score']
             tscore = 0
             for key in keys:
                 tscore = tscore + total_score[key]
@@ -260,7 +257,6 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
             print "could only extract ", count_top_hits
             break
 
-    # io.dumpPickle(str(previous_smotif_index) + "_tophits.pickle", dump_pickle)
     io.dumpGzipPickle(str(previous_smotif_index) + "_tophits.gzip", dump_pickle)
     print "actual number in top hits ", len(dump_pickle)
     return range(count_top_hits)

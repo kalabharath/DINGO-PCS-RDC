@@ -6,14 +6,11 @@ Aufthor: kalabharath, Email: kalabharath@gmail.com
 
 """
 import filters.constraints.looplengthConstraint as llc
-#import filters.noe.SidechainBayesianNoeFilter  as Noe
-import filters.noe.BayesianNoeFilter  as Noe
 import filters.pcs.pcsfilter as Pfilter
 import filters.rdc.rdcfilter as Rfilter
 import filters.rmsd.RefRmsd as ref
 import filters.rmsd.qcp as qcp
 import filters.sequence.sequence_similarity as Sfilter
-import ranking.NoeStageRank as rank
 import utility.io_util as io
 import utility.masterutil as mutil
 import utility.smotif_util as sm
@@ -97,21 +94,6 @@ def S1SmotifSearch(task):
         tlog.append(['seq_filter', smotif_seq, seq_identity])
 
         # ************************************************
-        # Unambiguous NOE score filter
-        # uses experimental ambiguous noe data to filter Smotifs
-        # scoring based on f-measure?
-        # ************************************************
-
-        if 'noe_data' in exp_data_types:
-
-            noe_probability, local_noe_probability, no_of_noes = Noe.S1NOEprob(s1_def, s2_def, smotif_data[i], exp_data)
-            #noe_probability, local_noe_probability, no_of_noes = Noe.S1ILVANOErob(s1_def, s2_def, smotif_data[i], exp_data)
-            if local_noe_probability >= exp_data['noe_fmeasure'][stage - 1]:
-                tlog.append(['NOE_filter', noe_probability, no_of_noes])
-            else:
-                continue
-
-        # ************************************************
         # Residual dipolar coupling filter
         # uses experimental RDC data to filter Smotifs
         # scoring based on normalised chisqr.
@@ -145,18 +127,13 @@ def S1SmotifSearch(task):
             tlog.append(['Ref_RMSD', ref_rmsd, seq_identity])
 
         # Dump the data to the disk
-        if pcs_tensor_fits or noe_probability:
+        if pcs_tensor_fits :
             dump_log.append(tlog)
 
     # Save all of the hits in pickled arrays
     if dump_log:
-        # testing for rdc_plus_pcs
-        if 'rank_top_hits' in exp_data_types:
-            dump_log = rank.rank_dump_log(dump_log, exp_data, stage=1)
         print "num of hits", len(dump_log)
-        # io.dumpPickle('0_' + str(index_array[0]) + "_" + str(index_array[1]) + ".pickle", dump_log)
         io.dumpGzipPickle('0_' + str(index_array[0]) + "_" + str(index_array[1]) + ".gzip", dump_log)
-        # return dump_log
     return True
 
 
@@ -281,21 +258,6 @@ def sXSmotifSearch(task):
             tlog.append(['seq_filter', concat_seq, seq_identity])
 
             # ************************************************
-            # NOE score filter
-            # uses experimental noe data to filter Smotifs
-            # scoring based on log-likelihood?
-            # ************************************************
-
-            if 'noe_data' in exp_data_types:
-                noe_probability, local_noe_probability, no_of_noes = Noe.SxNOEprob(transformed_coos, sse_ordered,
-                                                                                   current_ss, exp_data)
-                if local_noe_probability >= exp_data['noe_fmeasure'][stage - 1]:
-                    tlog.append(['NOE_filter', noe_probability, no_of_noes])
-                else:
-                    # Do not execute any further
-                    continue
-
-            # ************************************************
             # Residual dipolar coupling filter
             # uses experimental RDC data to filter Smotifs
             # scoring based on normalised chisqr
@@ -335,10 +297,6 @@ def sXSmotifSearch(task):
 
     # Dumping hits as a pickle array.
     if len(dump_log) > 0:
-        if 'rank_top_hits' in exp_data_types:
-            dump_log = rank.rank_dump_log(dump_log, exp_data, stage)
-
-        print "num of hits", len(dump_log),
-        # io.dumpPickle("tx_" + str(index_array[0]) + "_" + str(index_array[1]) + ".pickle", dump_log)
+        print "num of hits", len(dump_log)
         io.dumpGzipPickle("tx_" + str(index_array[0]) + "_" + str(index_array[1]) + ".gzip", dump_log)
     return True
