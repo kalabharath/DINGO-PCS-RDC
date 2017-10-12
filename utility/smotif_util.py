@@ -51,17 +51,23 @@ def readSmotifDatabase(smotif, *database_cutoff):
         else:
             root_dir = root_dir + '/' + entry
     smotif_db_path = root_dir + '/databases/database_cutoff_' + database_cutoff[0] + '/'
-    # smotif_db_path = "/home/kalabharath/projects/boss_pnmr/databases/database_cutoff_0.25/"
     file_name = smotif[0] + "_" + str(smotif[1]) + "_" + str(smotif[2]) + ".db.tar.gz"
     fin = smotif_db_path + file_name
-    try:
+
+    if os.path.isfile(fin):
         smotif_data = io.readTarPickle(fin)
         print "Reading in smotif database: ", fin
         return smotif_data
-    except:
-        print "Error in reading smotif database: ", fin
-        return False
-
+    else:
+        file_name = smotif[0] + "_" + str(smotif[1]) + "_" + str(smotif[2]) + ".db"
+        fin = smotif_db_path + file_name
+        if os.path.isfile(fin):
+            smotif_data = io.readPickle(fin)
+            print "Reading in smotif database: ", fin
+            return smotif_data
+        else:
+            print "Error in reading smotif database: ", fin
+            return False
 
 def orderSeq(previous_smotif, current_seq, direction):
     """
