@@ -1,6 +1,5 @@
 import collections
 import glob
-import math
 import os
 
 import utility.io_util as io
@@ -162,12 +161,11 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
         for t_hit in t_hits:
             hits.append(t_hit)
     """
-    identifiers: smotif, smotif_def, seq_filter, contacts_filter, PCS_filter, qcp_rmsd, Evofilter
+    identifiers: smotif, smotif_def, seq_filter, PCS_filter, qcp_rmsd,
                  RDC_filter, NOE_filter
     """
 
     new_dict = collections.defaultdict(list)
-    rdc_constant = 0.0
     for hit in hits:
         # thread_data contains data from each search and filter thread.
         # initialize total score array
@@ -185,14 +183,6 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
             if data_filter[0] == 'RDC_filter':
                 rdc_data = data_filter
                 rdc_score = rdcSumChi(rdc_data, stage)
-                """
-                log_likelihood = data_filter[2]
-                rdc_tensors = data_filter[1]
-                for tensor in rdc_tensors:
-                    rdc_constant = rdc_constant + tensor[0]
-                rdc_constant = rdc_constant * 1e-10
-                total_score['rdc_score'] = log_likelihood
-                """
                 total_score['rdc_score'] = rdc_score
 
                 # calculate the total score and append the hit
@@ -202,7 +192,6 @@ def makeTopPickle(previous_smotif_index, num_hits, stage):
             tscore = 0
             for key in keys:
                 tscore = tscore + total_score[key]
-            tscore = tscore + rdc_constant
             if tscore < 999.999:
                 new_dict[tscore].append(hit)
 
